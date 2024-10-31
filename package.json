@@ -1,26 +1,36 @@
 {
-  "name": "assignment-1",
+  "name": "ucad",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
+  "description": "Examples for the course",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "author": "hussainkazemian",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-react": "^7.37.1",
     "globals": "^15.11.0",
     "nodemon": "^3.1.7",
     "prettier": "3.3.3"
   },
   "dependencies": {
-    "express": "^4.21.1"
-  }
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.1",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.3"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "nodemonConfig": {
+  "ignore": ["node_modules", "public", "*.test.js"]
+},
+
+  "keywords": [],
+  "main": "app.js"
 }
