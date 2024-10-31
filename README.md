@@ -110,22 +110,3 @@ http://localhost:3000/media/imm.png
 http://localhost:3000/media/user.png
 
 Use GET requests to access these URLs in a browser or Postman to view/download the images.
-Summary of Key Features
-
-Express.js framework for setting up REST API endpoints.
-
-Static File Serving: Serve media files such as images from the /media folder.
-
-Nodemon for automatic server restarts during development.
-
-Pug Template Engine: Render a simple landing page with information about the API.
-
-RESTful Endpoints to manage CRUD operations for media items.
-
-Common Issues and Fixes
-
-Server Stops Immediately: Ensure app.listen() is correctly implemented at the end of app.js.
-
-Nodemon Restarts Too Frequently: Use a nodemon.json configuration to ignore folders such as node_modules or public.
-
-Static Files Not Accessible: Double-check the path when using express.static() to serve media files.
