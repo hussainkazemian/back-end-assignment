@@ -28,9 +28,12 @@
     "test": "test"
   },
   "nodemonConfig": {
-  "ignore": ["node_modules", "public", "*.test.js"]
-},
-
+    "ignore": [
+      "node_modules",
+      "public",
+      "*.test.js"
+    ]
+  },
   "keywords": [],
   "main": "app.js"
 }
