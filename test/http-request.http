@@ -1,0 +1,38 @@
+# Example api requests
+
+## Media resource
+
+### Get all media
+GET http://localhost:3000/api/media
+
+### Get a media item based on id
+GET http://localhost:3000/api/media/9632?format=plain
+
+### 2nd version
+GET http://localhost:3000/api/media/2
+### test not found
+GET http://localhost:3000/api/media/963
+
+### Create an item
+POST http://localhost:3000/api/media
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="title"
+
+New cat image
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Kiva kuva kissasta.
+------Boundary
+Content-Disposition: form-data; name="user_id"
+
+1
+------Boundary
+Content-Disposition: form-data; name="file"; filename="image.png"
+Content-Type: image/png
+
+< ./cat2.png
+------Boundary--
+
