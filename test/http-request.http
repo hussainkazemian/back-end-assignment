@@ -1,0 +1,125 @@
+# Example api requests
+
+## User authentication
+
+### Login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+Authorization: Bearer
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiaWF0IjoxNzMyMjIxMDA3LCJleHAiOjE3MzIzMDc0MDd9.qZxJo0Rk17A_7vb1xCnuawEO09I5tnnJt0qUxPTsbiQ
+
+{
+  "username": "admin",
+  "password": "no-password"
+}
+
+### Get my user info
+GET http://localhost:3000/api/auth/me
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+## Media resource
+
+### Get all media
+GET http://localhost:3000/api/media
+
+### Get a media item based on id
+GET http://localhost:3000/api/media/4
+### Get media item FAIL (id not found)
+GET http://localhost:3000/api/media/96399
+
+### Create an item
+POST http://localhost:3000/api/media
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="title"
+
+New cat image
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Kiva kuva kissasta.
+------Boundary
+Content-Disposition: form-data; name="file"; filename="image.png"
+Content-Type: image/png
+
+< ./cat2.png
+------Boundary--
+
+### Create an item FAIL (title missing)
+POST http://localhost:3000/api/media
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Kiva kuva kissasta.
+------Boundary
+Content-Disposition: form-data; name="file"; filename="image.png"
+Content-Type: image/png
+
+< ./cat2.png
+------Boundary--
+
+### Update an item
+PUT http://localhost:3000/api/media/13
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+{
+  "title": "Muokattu kuva",
+  "description": "Tosi kiva."
+}
+
+### Update a Media Item by ID
+PUT http://localhost:3000/api/media/1
+Content-Type: application/json
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+{
+  "title": "user-change",
+  "description": "Profile has changed."
+}
+
+### Delete a Media Item by ID
+DELETE http://localhost:3000/api/media/
+Authorization: Bearer
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+
+### User user by id
+GET http://localhost:3000/api/users/5
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+### Update User Information
+PUT http://localhost:3000/api/user/5
+Authorization: Bearer
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+Content-Type: application/json
+
+{
+  "username": "UpdatedUserName",
+  "email": "updated_email@example.com"
+}
+
+### Delete a Media Item by ID
+DELETE http://localhost:3000/api/media/
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+### Update User Information
+PUT http://localhost:3000/api/users
+Content-Type: application/json
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+
+
+{
+  "username": "UpdatedUserName",
+  "email": "updated_email@example.com"
+}
