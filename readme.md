@@ -12,79 +12,74 @@
 1. Run `npm run dev`
 
 
-## User Authentication
+- **Validation Rules**:
+  - **Users**:
+    - `username`: Must be a string of at least 3 characters. It is trimmed and sanitized to remove any harmful characters.
+    - `email`: Must be a valid email address, normalized to remove unnecessary symbols.
+    - `password`: Must be at least 6 characters long to ensure sufficient security.
+  - **Media Items**:
+    - `title`: Required and must be a non-empty string. It is trimmed and escaped to ensure it is formatted properly.
+    - `description`: Required and must be a non-empty string. It is sanitized to prevent XSS attacks.
 
-### 1. Login (POST /api/auth/login)
-- **Endpoint**: `/api/auth/login`
-- **Method**: `POST`
-- **Functionality**: Allows a user to log in using their credentials (`username` and `password`). A JWT token is returned on successful authentication.
-- **Response**: A JSON object containing user details and a token.
-- **Error Codes**:
-  - `401 Unauthorized`: Invalid credentials.
+- **Validation Middleware**:
+  - Validation rules were added for the **POST** and **PUT** requests. All validation errors are handled by checking the result of **express-validator** and passing them to a centralized error handler middleware.
 
-### 2. Get Current User Info (GET /api/auth/me)
-- **Endpoint**: `/api/auth/me`
-- **Method**: `GET`
-- **Functionality**: Retrieves the currently logged-in user's information. Requires a valid JWT token in the Authorization header.
-- **Response**: User details such as `user_id`, `username`, and `email`.
+### 2. Custom Error Handler Middleware
+Custom error handling middleware was added to provide consistent error responses in JSON format across the API.
 
-## Media Management
+- **Middleware Implemented**:
+  - **`notFoundHandler`**: Handles requests for routes that are not defined.
+  - **`errorHandler`**: Returns error responses in JSON format, with fields for `message` and `status`.
 
-### 1. Upload Media (POST /api/media)
-- **Endpoint**: `/api/media`
-- **Method**: `POST`
-- **Functionality**: Allows authenticated users to upload a media file (e.g., an image). The request must include a `title`, `description`, and the file in multipart form data.
-- **Response**: A JSON object containing the media item ID.
-- **Error Codes**:
-  - `400 Bad Request`: Missing `title`, `description`, or file.
-  - `401 Unauthorized`: No token or invalid token.
+- **Error Handling in Controllers**:
+  - Controllers have been refactored to use the `next(error)` function for passing errors to the custom error handler middleware. This approach provides consistent and clear error messages and makes debugging easier.
 
-### 2. Update Media Details (PUT /api/media/:id)
-- **Endpoint**: `/api/media/:id`
-- **Method**: `PUT`
-- **Functionality**: Updates an existing media item’s `title` and `description`. Only the media owner can update the item.
-- **Response**: Success message on update.
-- **Error Codes**:
-  - `404 Not Found`: Media item not found.
-  - `403 Forbidden`: User not authorized to update the item.
+### 3. Refactored Routes and Controllers
+- **User Routes** (`user-router.js`):
+  - Added **POST**, **PUT**, and **GET** routes for user management.
+  - Validation rules were applied to ensure valid input data.
+  - Token-based authentication middleware (`authenticateToken`) was used for protected routes.
+  
+- **Media Routes** (`media-router.js`):
+  - Added **POST**, **PUT**, **DELETE**, and **GET** routes for media item management.
+  - **Multer** was used to handle file uploads, with additional validation for file type and size.
+  - **express-validator** was used to ensure media items have a valid `title` and `description`.
 
-### 3. Delete Media (DELETE /api/media/:id)
-- **Endpoint**: `/api/media/:id`
-- **Method**: `DELETE`
-- **Functionality**: Deletes a media item by its ID. Only the media owner or an admin can delete an item.
-- **Response**: Success message on delete.
-- **Error Codes**:
-  - `404 Not Found`: Media item not found.
-  - `403 Forbidden`: User not authorized to delete the item.
+## Validation Rules
 
-### 4. Get Media Items (GET /api/media)
-- **Endpoint**: `/api/media`
-- **Method**: `GET`
-- **Functionality**: Retrieves all available media items.
-- **Response**: List of media items.
+### Users
+- **POST `/api/users`**:
+  - `username`: Required, minimum length 3 characters.
+  - `email`: Required, must be a valid email.
+  - `password`: Required, minimum length 6 characters.
 
-## User Management
+- **PUT `/api/users`**:
+  - `username`: Optional, minimum length 3 characters.
+  - `email`: Optional, must be a valid email.
 
-### 1. Update User Information (PUT /api/users)
-- **Endpoint**: `/api/users`
-- **Method**: `PUT`
-- **Functionality**: Allows authenticated users to update their own `username` and `email`.
-- **Response**: Success message on update.
-- **Error Codes**:
-  - `403 Forbidden`: User cannot update other users' information.
+### Media Items
+- **POST `/api/media`**:
+  - `title`: Required, must be a non-empty string.
+  - `description`: Required, must be a non-empty string.
 
-### 2. Get User by ID (GET /api/users/:id)
-- **Endpoint**: `/api/users/:id`
-- **Method**: `GET`
-- **Functionality**: Allows an authenticated user to retrieve information about another user by their ID.
-- **Response**: User details if the user exists.
-- **Error Codes**:
-  - `404 Not Found`: User not found.
+- **PUT `/api/media/:id`**:
+  - `title`: Optional, must be a non-empty string.
+  - `description`: Optional, must be a non-empty string.
 
 ## Error Handling
-- **401 Unauthorized**: The user must be authenticated to access the endpoint.
-- **403 Forbidden**: The user does not have permission to perform this action.
-- **404 Not Found**: Resource not found.
 
+Custom error-handling middleware was created to handle errors in a structured way:
 
+- **Centralized Error Handler**: Ensures all errors return a consistent JSON response.
+- **Error Response Format**:
+  - `message`: A descriptive error message.
+  - `status`: The HTTP status code (e.g., `400`, `404`, `500`).
 
+### Example Error Response
+```json
+{
+  "error": {
+    "message": "Invalid or missing fields",
+    "status": 400
+  }
+}

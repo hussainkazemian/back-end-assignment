@@ -2,6 +2,25 @@
 
 ## User authentication
 
+### Register
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuserhussain",
+  "password": "new-password",
+  "email": "newuserhussain@example.com"
+}
+
+### invalid data
+POST http://localhost:3000/api/media 
+Content-Type: application/json
+Authorization: Bearer
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+{
+  "title": "test title",
+  "description": "test description",
+}
 ### Login
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
@@ -122,4 +141,14 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV
 {
   "username": "UpdatedUserName",
   "email": "updated_email@example.com"
+}
+
+### missing filled
+POST  http://127.0.0.1:3000/api/media
+Content-Type: application/json
+Authorization: Bearer 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+{
+    "username": "",
+    "password":"no-password"
 }

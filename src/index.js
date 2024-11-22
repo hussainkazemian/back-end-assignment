@@ -2,6 +2,7 @@ import express from 'express';
 import mediaRouter from './routes/media-router.js';
 import authRouter from './routes/auth-router.js';
 import userRouter from './routes/user-router.js';
+import { notFoundHandler, errorHandler } from './middlewares/error-handler.js'; // Import error handlers
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -33,10 +34,12 @@ app.use('/api/media', mediaRouter);
 
 app.use('/api/users', userRouter);
 // User resource endpoints
-// TODO: implement user resource
 //app.use('/api/users', userRouter);
 app.use('/api/users', userRouter); 
-
+// not found handler for all other routes
+app.use(notFoundHandler);
+// custom error handler as the last middleware
+app.use(errorHandler);
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);

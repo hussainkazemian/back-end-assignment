@@ -1,3 +1,4 @@
+import { validationResult, body } from 'express-validator';
 import {
   fetchMediaItems,
   addMediaItem,
@@ -6,50 +7,52 @@ import {
   deleteMediaItem,
 } from '../models/media-model.js';
 
-const getItems = async (req, res) => {
+const postMediaValidationRules = [
+  body('title').isString().notEmpty().trim().escape().withMessage('Title is required'),
+  body('description').isString().notEmpty().trim().escape().withMessage('Description is required'),
+];
+
+const getItems = async (req, res, next) => {
   try {
-    res.json(await fetchMediaItems());
-  } catch (e) {
-    console.error('getItems', e.message);
-    res.status(503).json({error: 503, message: 'DB error'});
+    const items = await fetchMediaItems();
+    res.json(items);
+  } catch (error) {
+    next(error); // Use the next() to pass error to error handler middleware
   }
 };
 
-const getItemById = async (req, res) => {
-  const id = parseInt(req.params.id);
-  console.log('getItemById', id);
+const getItemById = async (req, res, next) => {
+  const id = parseInt(req.params.id, 10);
   try {
     const item = await fetchMediaItemById(id);
     if (item) {
-      res.json(item);
+      res.status(200).json(item);
     } else {
-      res.status(404).json({message: 'Item not found'});
+      const error = new Error('Item not found');
+      error.status = 404;
+      return next(error);
     }
   } catch (error) {
-    console.error('getItemById', error.message);
-    res.status(503).json({error: 503, message: error.message});
+    next(error);
   }
 };
 
-/**
- * Add media controller function for handling POST request and sending response
- * @param {object} req HTTP request object
- * @param {object} res HTTP response object
- * @returns {object} response object
- */
-const postItem = async (req, res) => {
-  // destructure title and description property values from req.body
-  const {title, description} = req.body;
-  // quick and dirty validation example, better input validatation is added later
-  if (!title || !description || !req.file) {
-    return res
-      .status(400)
-      .json({message: 'Title, description and file required'});
+const postItem = async (req, res, next) => {
+  if (!req.file) {
+    const error = new Error('Invalid or missing file');
+    error.status = 400;
+    return next(error);
   }
-  console.log('post req body', req.body);
-  console.log('post req file', req.file);
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Invalid or missing fields');
+    error.status = 400;
+    return next(error);
+  }
+
+  const { title, description } = req.body;
   const newMediaItem = {
-    // user id read from token added by authentication middleware
     user_id: req.user.user_id,
     title,
     description,
@@ -58,24 +61,16 @@ const postItem = async (req, res) => {
     media_type: req.file.mimetype,
     created_at: new Date().toISOString(),
   };
+
   try {
     const id = await addMediaItem(newMediaItem);
-    res.status(201).json({message: 'Item added', id: id});
+    res.status(201).json({ message: 'Item added', id });
   } catch (error) {
-    return res
-      .status(400)
-      .json({message: 'Something went wrong: ' + error.message});
+    next(error);
   }
 };
 
-/**
- * Update media file Controller function for handling PUT request and sending response
- * @param {object} req HTTP request object
- * @param {object} res HTTP response object
- * @returns {object} response object
- */
-
-const putItem = async (req, res) => {
+const putItem = async (req, res, next) => {
   const { title, description } = req.body;
   const newDetails = { title, description };
   const userRole = req.user.user_level_id;
@@ -83,34 +78,35 @@ const putItem = async (req, res) => {
   try {
     let itemsEdited = 0;
 
-    if (userRole === 'admin') {
-      // Admin can update any media item
-      itemsEdited = await updateMediaItemAdmin(req.params.id, newDetails);
+    if (userRole === 1) { // Assuming admin role is represented by user_level_id = 1
+      itemsEdited = await updateMediaItem(req.params.id, null, newDetails);
     } else {
       itemsEdited = await updateMediaItem(req.params.id, req.user.user_id, newDetails);
     }
 
     if (itemsEdited === 0) {
-      return res.status(403).json({ message: 'Permission denied or item not found.' });
+      const error = new Error('Permission denied or item not found.');
+      error.status = 403;
+      return next(error);
     }
-    return res.status(200).json({ message: 'Item updated', id: req.params.id });
+    res.status(200).json({ message: 'Item updated', id: req.params.id });
   } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong: ' + error.message });
+    next(error);
   }
 };
 
-const deleteItem = async (req, res) => {
+const deleteItem = async (req, res, next) => {
   try {
     const itemsDeleted = await deleteMediaItem(req.params.id, req.user.user_id);
     if (itemsDeleted === 0) {
-      return res.status(403).json({ message: 'Permission denied or media item not found.' });
-    } else {
-      return res.status(200).json({ message: 'Item deleted', id: req.params.id });
+      const error = new Error('Permission denied or media item not found.');
+      error.status = 403;
+      return next(error);
     }
+    res.status(200).json({ message: 'Item deleted', id: req.params.id });
   } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong: ' + error.message });
+    next(error);
   }
 };
 
-// Make sure to export deleteItem
-export { getItems, getItemById, postItem, putItem, deleteItem };
+export { getItems, getItemById, postItem, putItem, deleteItem, postMediaValidationRules };
