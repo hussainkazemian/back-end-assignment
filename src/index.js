@@ -4,6 +4,8 @@ import userRouter from "./routes/user-router.js";
 import commentRouter from "./routes/comment-router.js";
 import ratingRouter from "./routes/rating-router.js";
 import likeRouter from "./routes/like-router.js";
+import cors from "cors";
+
 
 const hostname = "127.0.0.1";
 const port = 3000;
@@ -12,6 +14,10 @@ const app = express();
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
+
+// Middleware to enable CORS
+app.use(cors());
+
 // Set up Pug as the view engine
 app.set("view engine", "pug");
 app.set("views", "src/views");
@@ -19,6 +25,12 @@ app.set("views", "src/views");
 // Static file serving
 app.use(express.static("public")); // Home page assets (HTML, CSS, JS)
 app.use("/uploads", express.static("uploads")); // Uploaded media files
+app.use(cors({
+    origin: "https://hussain.westeurope.cloudapp.azure.com",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
 
 // API documentation page
 // API documentation page

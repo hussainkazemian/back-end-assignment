@@ -8,5 +8,29 @@
 <body>
   <h1>Media Sharing Application</h1>
   <p>Replace this file with the client app.</p>
+
+
+ <ul>
+        <li><a href="/api">API Documentation</a></li>
+        <li><a href="/api/media">Media Endpoints</a></li>
+    </ul>
+
+
+<script>
+    fetch('/api/media')
+        .then(response => response.json())
+        .then(data => {
+            const mediaList = document.createElement('ul');
+            data.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.textContent = item.title;
+                mediaList.appendChild(listItem);
+            });
+            document.body.appendChild(mediaList);
+        })
+        .catch(error => console.error('Error fetching media:', error));
+</script>
+
+
 </body>
 </html>
