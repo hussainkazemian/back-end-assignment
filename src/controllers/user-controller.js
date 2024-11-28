@@ -1,5 +1,7 @@
 import { updateUserById, selectUserById, addUser } from '../models/user-model.js';
 import { validationResult, body } from 'express-validator';
+import bcrypt from 'bcryptjs';
+
 
 // Validation rules for adding a new user
 const postUserValidationRules = [
