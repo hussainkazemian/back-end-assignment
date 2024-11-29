@@ -12,23 +12,11 @@ To run this project, you need:
 - **Postman** for testing.
 
 ## Project Setup
-### Step 1: Clone the Repository
-Clone this project to your local machine:
-```bash
-git clone https://github.com/your-repository/media-sharing-app.git
-```
+Install bcryptjs: npm i bcryptjs
+Install cors package: npm i cors
 
-### Step 2: Install Dependencies
-Navigate to the project directory and install dependencies:
-```bash
-cd media-sharing-app
-npm install
 
-```
-- **SENDGRID_API_KEY**: Obtain this from your SendGrid account.
-- **EMAIL_USER**: Verify an email address in SendGrid and use it as the sender address.
-
-### Step 4: Set Up the Database
+### Set Up the Database
 Create the MySQL database and tables by running the provided SQL scripts in the `database` folder:
 - `create-password-reset.sql` to create the password reset table.
 
@@ -44,7 +32,7 @@ CREATE TABLE PasswordResets (
 );
 ```
 
-### Step 5: Run the Application
+### Run the Application
 Start the server:
 ```bash
 npm run dev
