@@ -7,13 +7,13 @@ This project is a media sharing application that includes a feature for resettin
 ## Prerequisites
 To run this project, you need:
 - **Node.js** and **npm** installed.
-- A **SendGrid** account for email integration.
+- **SendGrid** account for email integration.
 - **MySQL** database running locally or remotely.
 - **Postman** for testing.
 
 ## Project Setup
-Install bcryptjs: npm i bcryptjs
-Install cors package: npm i cors
+**Install bcryptjs: `npm i bcryptjs`
+**Install cors package: `npm i cors`
 
 
 ### Set Up the Database
