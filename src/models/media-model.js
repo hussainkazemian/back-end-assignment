@@ -99,7 +99,22 @@ const updateMediaItemAdmin = async (id, updatedItem) => {
     throw new Error('Database error ' + error.message);
   }
 };
-export { fetchMediaItems, fetchMediaItemById, addMediaItem, updateMediaItem, updateMediaItemAdmin, deleteMediaItem };
+/**
+ * Fetch a user by their email address
+ * @param {string} email - The email address to search for
+ * @returns {Promise<object|null>} - User record or null if not found
+ */
+const selectUserByEmail = async (email) => {
+  try {
+    const sql = `SELECT * FROM Users WHERE email = ?`;
+    const [rows] = await promisePool.query(sql, [email]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error('selectUserByEmail error:', error.message);
+    throw new Error('Database error: ' + error.message);
+  }
+};
+export { fetchMediaItems, fetchMediaItemById, addMediaItem, updateMediaItem, updateMediaItemAdmin, deleteMediaItem, selectUserByEmail };
 
 
 

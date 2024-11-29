@@ -68,11 +68,18 @@ const postUser = async (req, res, next) => {
   }
 
   try {
-    const newUserId = await addUser(req.body);
+    const salt = await bcrypt.genSalt(10); // Use a properly named variable
+    const hashedPassword = await bcrypt.hash(req.body.password, salt); // Use the correct variable `salt`
+    const userData = {
+      username: req.body.username,
+      email: req.body.email,
+      password: hashedPassword, // Store hashed password
+    };
+
+    const newUserId = await addUser(userData); // Declare `newUserId` once here
     res.status(201).json({ message: 'New user added', user_id: newUserId });
   } catch (error) {
     next(error);
   }
 };
-
 export { getUserById, putUser, postUser, postUserValidationRules, putUserValidationRules };

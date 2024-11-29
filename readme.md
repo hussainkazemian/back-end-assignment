@@ -1,85 +1,128 @@
-# Media Sharing app example REST API application
+# Media Sharing Application - Password Reset Functionality
 
-## Installation
-
-1. Clone
-2. Run `npm install`
-3. Create database
-4. Create .env file (see `.env.sample`)
-
-## Run
-
-1. Run `npm run dev`
+## Overview
+This project is a media sharing application that includes a feature for resetting user passwords. The password reset feature is integrated with **Twilio SendGrid** for sending reset emails.
 
 
-- **Validation Rules**:
-  - **Users**:
-    - `username`: Must be a string of at least 3 characters. It is trimmed and sanitized to remove any harmful characters.
-    - `email`: Must be a valid email address, normalized to remove unnecessary symbols.
-    - `password`: Must be at least 6 characters long to ensure sufficient security.
-  - **Media Items**:
-    - `title`: Required and must be a non-empty string. It is trimmed and escaped to ensure it is formatted properly.
-    - `description`: Required and must be a non-empty string. It is sanitized to prevent XSS attacks.
+## Prerequisites
+To run this project, you need:
+- **Node.js** and **npm** installed.
+- A **SendGrid** account for email integration.
+- **MySQL** database running locally or remotely.
+- **Postman** for testing.
 
-- **Validation Middleware**:
-  - Validation rules were added for the **POST** and **PUT** requests. All validation errors are handled by checking the result of **express-validator** and passing them to a centralized error handler middleware.
+## Project Setup
+### Step 1: Clone the Repository
+Clone this project to your local machine:
+```bash
+git clone https://github.com/your-repository/media-sharing-app.git
+```
 
-### 2. Custom Error Handler Middleware
-Custom error handling middleware was added to provide consistent error responses in JSON format across the API.
+### Step 2: Install Dependencies
+Navigate to the project directory and install dependencies:
+```bash
+cd media-sharing-app
+npm install
 
-- **Middleware Implemented**:
-  - **`notFoundHandler`**: Handles requests for routes that are not defined.
-  - **`errorHandler`**: Returns error responses in JSON format, with fields for `message` and `status`.
+```
+- **SENDGRID_API_KEY**: Obtain this from your SendGrid account.
+- **EMAIL_USER**: Verify an email address in SendGrid and use it as the sender address.
 
-- **Error Handling in Controllers**:
-  - Controllers have been refactored to use the `next(error)` function for passing errors to the custom error handler middleware. This approach provides consistent and clear error messages and makes debugging easier.
+### Step 4: Set Up the Database
+Create the MySQL database and tables by running the provided SQL scripts in the `database` folder:
+- `create-password-reset.sql` to create the password reset table.
 
-### 3. Refactored Routes and Controllers
-- **User Routes** (`user-router.js`):
-  - Added **POST**, **PUT**, and **GET** routes for user management.
-  - Validation rules were applied to ensure valid input data.
-  - Token-based authentication middleware (`authenticateToken`) was used for protected routes.
-  
-- **Media Routes** (`media-router.js`):
-  - Added **POST**, **PUT**, **DELETE**, and **GET** routes for media item management.
-  - **Multer** was used to handle file uploads, with additional validation for file type and size.
-  - **express-validator** was used to ensure media items have a valid `title` and `description`.
+#### `create-password-reset.sql`
+This script creates the `PasswordResets` table to store reset tokens.
+```sql
+CREATE TABLE PasswordResets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  token VARCHAR(255) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+```
 
-## Validation Rules
+### Step 5: Run the Application
+Start the server:
+```bash
+npm run dev
+```
+The server will be running at `http://127.0.0.1:3000`.
 
-### Users
-- **POST `/api/users`**:
-  - `username`: Required, minimum length 3 characters.
-  - `email`: Required, must be a valid email.
-  - `password`: Required, minimum length 6 characters.
+## Using SendGrid for Email
+1. **Sign Up for SendGrid**: Go to [SendGrid](https://sendgrid.com) and create an account.
+2. **Generate an API Key**: After logging in, navigate to the **API Keys** section and generate an API key.
+3. **Verify Sender Email**: Verify your sender email in SendGrid by going to **Settings > Sender Authentication**.
+4. **Add API Key to .env**: Add the API key to the `.env` file as `SENDGRID_API_KEY`.
 
-- **PUT `/api/users`**:
-  - `username`: Optional, minimum length 3 characters.
-  - `email`: Optional, must be a valid email.
+## Password Reset Workflow
+1. **User Requests Password Reset**:
+   - **Endpoint**: `POST /api/auth/password-reset`
+   - **Body**:
+   ```json
+   {
+     "email": "user@example.com"
+   }
+   ```
+   - **Response**: A reset link is sent to the user's email via SendGrid.
 
-### Media Items
-- **POST `/api/media`**:
-  - `title`: Required, must be a non-empty string.
-  - `description`: Required, must be a non-empty string.
+2. **User Receives Email**:
+   - The email contains a link like `http://127.0.0.1:3000/api/auth/password-reset/<token>`.
 
-- **PUT `/api/media/:id`**:
-  - `title`: Optional, must be a non-empty string.
-  - `description`: Optional, must be a non-empty string.
+3. **User Resets Password**:
+   - **Endpoint**: `POST /api/auth/password-reset/<token>`
+   - **Body**:
+   ```json
+   {
+     "password": "newpassword123"
+   }
+   ```
+   - **Response**: If successful, the password is updated.
 
-## Error Handling
+4. **User Logs in with New Password**:
+   - **Endpoint**: `POST /api/auth/login`
+   - **Body**:
+   ```json
+   {
+     "username": "username",
+     "password": "newpassword123"
+   }
+   ```
+   - **Response**: A JWT token for authentication is returned.
 
-Custom error-handling middleware was created to handle errors in a structured way:
+## Testing with Postman
+1. **Register a User**:
+   - **Endpoint**: `POST /api/auth/register`
+   - **Body**:
+   ```json
+   {
+     "username": "testuser",
+     "email": "user@user.com",
+     "password": "pd123"
+   }
+   ```
 
-- **Centralized Error Handler**: Ensures all errors return a consistent JSON response.
-- **Error Response Format**:
-  - `message`: A descriptive error message.
-  - `status`: The HTTP status code (e.g., `400`, `404`, `500`).
+2. **Login to Get Token**:
+   - Use the login endpoint to authenticate and receive a JWT token.
 
-### Example Error Response
-```json
-{
-  "error": {
-    "message": "Invalid or missing fields",
-    "status": 400
-  }
-}
+3. **Request Password Reset**:
+   - Send a `POST` request to `/api/auth/password-reset` with the registered email.
+
+4. **Use Password Reset Link**:
+   - Use the token received in the email to reset the password.
+
+## Common Issues and Debugging Tips
+- **500 Internal Server Error**: Check the server logs for specific error messages.
+- **Invalid Token**: Ensure the token has not expired and is correct.
+- **Emails Not Sent**: Verify that the **SendGrid API key** and **sender email** are configured properly.
+- **Database Errors**: Make sure the MySQL server is running and credentials in `.env` are correct.
+
+## Security Considerations
+- **Token Expiry**: Password reset tokens are valid for a limited period.
+- **Password Hashing**: All passwords are hashed using **bcrypt** before storing in the database.
+- **Environment Variables**: Sensitive information is stored in the `.env` file.
+
+
+

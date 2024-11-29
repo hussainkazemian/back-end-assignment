@@ -1,6 +1,22 @@
 import promisePool from '../utils/database.js';
 
 /**
+ * Fetch a user by their email address
+ * @param {string} email - The email address to search for
+ * @returns {Promise<object|null>} - User record or null if not found
+ */
+const selectUserByEmail = async (email) => {
+  try {
+    const sql = `SELECT * FROM Users WHERE email = ?`;
+    const [rows] = await promisePool.query(sql, [email]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error('selectUserByEmail error:', error.message);
+    throw new Error('Database error: ' + error.message);
+  }
+};
+
+/**
  * Update user information by user_id
  * @param {number} id User ID
  * @param {object} updatedData Object containing new values for `username` and `email`
@@ -19,12 +35,13 @@ const selectUserById = async (id) => {
   }
 };
 
-const selectUserByUsernameAndPassword = async (username, password) => {
+const selectUserByUsernameAndPassword = async (username) => {
   try {
     // TODO: return only user_id?
     const [rows] = await promisePool.query(
-      'SELECT user_id, username, email, user_level_id, created_at FROM Users WHERE username = ? AND password = ?',
-      [username, password],
+      'SELECT user_id, username, email, password FROM Users WHERE username = ?',
+      
+      [username],
     );
     return rows[0];
   } catch (error) {
@@ -33,16 +50,31 @@ const selectUserByUsernameAndPassword = async (username, password) => {
   }
 };
 const updateUserById = async (id, updatedData) => {
-  const sql = `UPDATE Users SET username = ?, email = ? WHERE user_id = ?`;
-  const params = [updatedData.username, updatedData.email, id];
+  // Check if only the password is being updated
+  const columnsToUpdate = [];
+  const values = [];
+
+  if (updatedData.password) {
+    columnsToUpdate.push('password = ?');
+    values.push(updatedData.password);
+  }
+
+  if (columnsToUpdate.length === 0) {
+    throw new Error('No valid fields to update');
+  }
+
+  const sql = `UPDATE Users SET ${columnsToUpdate.join(', ')} WHERE user_id = ?`;
+  values.push(id);
+
   try {
-    const result = await promisePool.query(sql, params);
-    return result[0].affectedRows;
+    const [result] = await promisePool.query(sql, values);
+    return result.affectedRows;
   } catch (error) {
-    console.error('updateUserById', error.message);
-    throw new Error('Database error ' + error.message);
+    console.error('updateUserById error:', error.message);
+    throw new Error('Database error: ' + error.message);
   }
 };
+
 
 /**
 * Creates a new user in the database
@@ -64,5 +96,5 @@ const addUser = async (user) => {
   }
 }
 
-export { selectUserByUsernameAndPassword, selectUserById, updateUserById, addUser};
+export {selectUserByEmail, selectUserByUsernameAndPassword, selectUserById, updateUserById, addUser};
 

@@ -1,11 +1,13 @@
 import express from 'express';
 import {body} from 'express-validator';
-import {getMe, postLogin} from '../controllers/auth-controller.js';
+import {getMe, postLogin, requestPasswordReset, resetPassword } from '../controllers/auth-controller.js';
 import {authenticateToken} from '../middlewares/authentication.js';
 import {postUser} from '../controllers/user-controller.js';
 
 
 const authRouter = express.Router();
+
+
 
 authRouter.route('/login').post(postLogin);
 authRouter.route('/me').get(authenticateToken, getMe);
@@ -18,4 +20,7 @@ authRouter.route('/register')
     body('email').isEmail(),
     postUser,
   );
+
+authRouter.post('/password-reset', requestPasswordReset);
+authRouter.post('/password-reset/:token', resetPassword);
 export default authRouter;

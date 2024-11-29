@@ -1,18 +1,22 @@
 import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
 import mediaRouter from './routes/media-router.js';
 import authRouter from './routes/auth-router.js';
 import userRouter from './routes/user-router.js';
-import { notFoundHandler, errorHandler } from './middlewares/error-handler.js'; // Import error handlers
+import { notFoundHandler, errorHandler } from './middlewares/error-handler.js'; 
 
 const hostname = '127.0.0.1';
 const port = 3000;
 const app = express();
+app.use(helmet());
 
 app.set('view engine', 'pug');
 app.set('views', 'src/views');
 
 app.use(express.json());
 
+app.use(cors());
 // Home page (client) as static html, css, js
 app.use(express.static('public'));
 // Uploaded media files
