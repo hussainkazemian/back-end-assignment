@@ -12,8 +12,8 @@ To run this project, you need:
 - **Postman** for testing.
 
 ## Project Setup
-**Install bcryptjs: `npm i bcryptjs`
-**Install cors package: `npm i cors`
+**Install bcryptjs: `npm i bcryptjs`.
+**Install cors package: `npm i cors`.
 
 
 ### Set Up the Database
