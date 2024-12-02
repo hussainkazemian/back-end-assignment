@@ -1,10 +1,54 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { selectUserById, selectUserByUsernameAndPassword, updateUserById, selectUserByEmail } from '../models/user-model.js';
-import { addPasswordReset, getPasswordResetByToken } from '../models/password-reset-model.js';
+import { 
+  selectUserById, 
+  selectUserByUsernameAndPassword, 
+  updateUserById, 
+  selectUserByEmail, 
+  addUser // Use the existing addUser function
+} from '../models/user-model.js';
+import { 
+  addPasswordReset, 
+  getPasswordResetByToken 
+} from '../models/password-reset-model.js';
 import { sendEmail } from '../utils/email.js';
 import 'dotenv/config';
+
+// Register Functionality
+const register = async (req, res, next) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Check if email is already in use
+    const existingUser = await selectUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email is already in use' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Add user to the database
+    const userId = await addUser({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully.',
+      user: {
+        id: userId,
+        username,
+        email,
+      },
+    });
+  } catch (error) {
+    console.error('register error:', error.message);
+    next(error); // Pass the error to the middleware
+  }
+};
 
 // Login Functionality
 const postLogin = async (req, res, next) => {
@@ -31,11 +75,11 @@ const postLogin = async (req, res, next) => {
     res.json({ ...user, token });
   } catch (error) {
     console.error('postLogin error:', error.message);
-    next(error); // Pass to error-handling middleware
+    next(error);
   }
 };
 
-// Get Current User Info
+// Other functions remain unchanged
 const getMe = async (req, res, next) => {
   try {
     const user = await selectUserById(req.user.user_id);
@@ -49,7 +93,6 @@ const getMe = async (req, res, next) => {
   }
 };
 
-// Request Password Reset
 const requestPasswordReset = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -59,22 +102,19 @@ const requestPasswordReset = async (req, res, next) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Generate reset token
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 3600000); // Valid for 1 hour
+    const expiresAt = new Date(Date.now() + 3600000);
     await addPasswordReset({ user_id: user.user_id, token, expires_at: expiresAt });
 
-    // Send reset token via email
     await sendEmail(email, 'Password Reset', `Your password reset token is: ${token}`);
 
     res.json({ message: 'Password reset email sent' });
   } catch (error) {
     console.error('requestPasswordReset error:', error.message);
-    res.status(500).json({ message: 'Failed to process password reset' });
+    next(error);
   }
 };
 
-// Reset Password
 const resetPassword = async (req, res, next) => {
   try {
     const { token } = req.params;
@@ -85,15 +125,14 @@ const resetPassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     await updateUserById(reset.user_id, { password: hashedPassword });
+
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error('resetPassword error:', error.message);
-    res.status(500).json({ message: 'Failed to reset password' });
+    next(error);
   }
 };
 
-export { postLogin, getMe, requestPasswordReset, resetPassword };
+export { register, postLogin, getMe, requestPasswordReset, resetPassword };

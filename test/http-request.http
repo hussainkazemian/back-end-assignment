@@ -7,9 +7,9 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "newuserhussain",
-  "password": "new-password",
-  "email": "newuserhussain@example.com"
+  "username": "MattinewUser",
+  "password": "New-password",
+  "email": "newuserhussain@gmail.com"
 }
 
 ### invalid data
@@ -25,17 +25,36 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 Authorization: Bearer
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiaWF0IjoxNzMyMjIxMDA3LCJleHAiOjE3MzIzMDc0MDd9.qZxJo0Rk17A_7vb1xCnuawEO09I5tnnJt0qUxPTsbiQ
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOCwiaWF0IjoxNzMzMTMyMDUzLCJleHAiOjE3MzMyMTg0NTN9.tZ1JaaNdvIr9nbps8ErR500cZY_XQt66-tH7TDHdz-8
 
 {
-  "username": "admin",
-  "password": "no-password"
+  "username": "Lastteest",
+  "password": "nopassword12"
 }
+
+### Login Error
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+Authorization: Bearer
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOCwiaWF0IjoxNzMzMTMyMDUzLCJleHAiOjE3MzMyMTg0NTN9.tZ1JaaNdvIr9nbps8ErR500cZY_XQt66-tH7TDHdz-8
+
+{
+  "username": "Lastteest1",
+  "password": "nopassword12"
+}
+
+### Login Error
+GET  http://localhost:3000/api/auth/me
+Authorization: Bearer
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOCwiaWF0IjoxNzMzMTMyMDUzLCJleHAiOjE3MzMyMTg0NTN9.tZ1JaaNdvIr9nbps8ErR500cZY_XQt66-tH7TDHdz-8
+
+
 
 ### Get my user info
 GET http://localhost:3000/api/auth/me
+
 Authorization: Bearer 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJpYXQiOjE3MzIxOTk4NjIsImV4cCI6MTczMjI4NjI2Mn0.I4r3gqGur9AVgrto6ysLSoX8Q7z8NFfGR58KcMpUWfE
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOCwiaWF0IjoxNzMzMTMyMDUzLCJleHAiOjE3MzMyMTg0NTN9.tZ1JaaNdvIr9nbps8ErR500cZY_XQt66-tH7TDHdz-8
 ## Media resource
 
 ### Get all media

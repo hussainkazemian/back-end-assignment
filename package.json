@@ -7,12 +7,23 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "apidoc": "apidoc -i src/routes/ -o docs/",
+    "generate-docs": "npm run apidoc" 
   },
   "author": "mattpe",
   "license": "ISC",
+  "apidoc": {
+    "title": "This is the file for Media Sharing API docs",
+    "url": "https://example.com/api/v1",
+    "order": [
+      "Authentication",
+      "User"
+    ]
+  },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "apidoc": "^1.2.0",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.11.0",

@@ -1,116 +1,114 @@
-# Media Sharing Application - Password Reset Functionality
+# Media Sharing API
 
-## Overview
-This project is a media sharing application that includes a feature for resetting user passwords. The password reset feature is integrated with **Twilio SendGrid** for sending reset emails.
+THe Media Sharing API is a RESTful API built to manage user accounts, authenticate users, and handle media uploads. This API allows you to create user accounts, authenticate using JWT, upload images or videos, and manage media resources.
 
+## Features
+- User Registration and Login using JWT for secure authentication.
+- Password Reset functionality.
+- Create, Read, Update, Delete (CRUD) operations for Media items.
+- Documentation of API endpoints using apidoc.
 
-## Prerequisites
-To run this project, you need:
-- **Node.js** and **npm** installed.
-- **SendGrid** account for email integration.
-- **MySQL** database running locally or remotely.
-- **Postman** for testing.
+## Documentation
+The full API documentation is generated using [apidoc](https://apidocjs.com) and served within the application.
 
-## Project Setup
-**Install bcryptjs: `npm i bcryptjs`.
-**Install cors package: `npm i cors`.
+- **URL for API Documentation**: [http://localhost:3000/docs](http://localhost:3000/docs)
 
+### Available Endpoints
+#### **Authentication Endpoints**
+- **POST** `/api/auth/register` - Register a new user.
+- **POST** `/api/auth/login` - Authenticate a user and get a JWT token.
+- **GET** `/api/auth/me` - Retrieve the authenticated user's details.
+- **POST** `/api/auth/password-reset` - Request a password reset.
+- **POST** `/api/auth/password-reset/:token` - Reset the user's password.
 
-### Set Up the Database
-Create the MySQL database and tables by running the provided SQL scripts in the `database` folder:
-- `create-password-reset.sql` to create the password reset table.
+#### **Media Endpoints**
+- **POST** `/api/media` - Upload a new media file (authenticated users only).
+- **GET** `/api/media/:id` - Get a media item by its ID.
+- **PUT** `/api/media/:id` - Update a media item by its ID (authenticated users only).
+- **DELETE** `/api/media/:id` - Delete a media item by its ID (authenticated users only).
+- **GET** `/api/media` - Get all media items.
 
-#### `create-password-reset.sql`
-This script creates the `PasswordResets` table to store reset tokens.
-```sql
-CREATE TABLE PasswordResets (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  token VARCHAR(255) NOT NULL,
-  expires_at DATETIME NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
-```
+## Installation
+To set up this project on your local machine, please follow the steps below:
 
-### Run the Application
-Start the server:
-```bash
-npm run dev
-```
-The server will be running at `http://127.0.0.1:3000`.
+### Prerequisites
+- Node.js (v16 or above recommended)
+- npm (Node Package Manager)
+- MariaDB or any other MySQL-compatible database
 
-## Using SendGrid for Email
-1. **Sign Up for SendGrid**: Go to [SendGrid](https://sendgrid.com) and create an account.
-2. **Generate an API Key**: After logging in, navigate to the **API Keys** section and generate an API key.
-3. **Verify Sender Email**: Verify your sender email in SendGrid by going to **Settings > Sender Authentication**.
-4. **Add API Key to .env**: Add the API key to the `.env` file as `SENDGRID_API_KEY`.
+### Setup
 
-## Password Reset Workflow
-1. **User Requests Password Reset**:
-   - **Endpoint**: `POST /api/auth/password-reset`
-   - **Body**:
-   ```json
-   {
-     "email": "user@example.com"
-   }
+1. **Clone the Repository**
+   ```sh
+   git clone <repository-url>
+   cd authentication
    ```
-   - **Response**: A reset link is sent to the user's email via SendGrid.
 
-2. **User Receives Email**:
-   - The email contains a link like `http://127.0.0.1:3000/api/auth/password-reset/<token>`.
-
-3. **User Resets Password**:
-   - **Endpoint**: `POST /api/auth/password-reset/<token>`
-   - **Body**:
-   ```json
-   {
-     "password": "newpassword123"
-   }
+2. **Install Dependencies**
+   Run the following command to install all required packages:
+   ```sh
+   npm install
    ```
-   - **Response**: If successful, the password is updated.
 
-4. **User Logs in with New Password**:
-   - **Endpoint**: `POST /api/auth/login`
-   - **Body**:
-   ```json
-   {
-     "username": "username",
-     "password": "newpassword123"
-   }
+3. **Configure Environment Variables**
+   Create a `.env` file in the root directory of the project and add the following configurations:
+   ```env
+   JWT_SECRET=your_jwt_secret_key
+   JWT_EXPIRE_IN=7d
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=your_db_password
+   DB_NAME=mediasharingapp
    ```
-   - **Response**: A JWT token for authentication is returned.
 
-## Testing with Postman
+4. **Database Setup**
+   Create a new database named `mediasharingapp` in your MariaDB or MySQL instance.
+
+5. **Run the Application**
+   Use `nodemon` for development purposes to automatically restart the server on changes:
+   ```sh
+   npm run dev
+   ```
+   The server should start at [http://localhost:3000](http://localhost:3000).
+
+6. **Generate API Documentation**
+   Run the following command to generate API documentation:
+   ```sh
+   npm run generate-docs
+   ```
+   This command will generate the documentation in the `docs/` directory.
+
+7. **View API Documentation**
+   Visit [http://localhost:3000/docs](http://localhost:3000/docs) to see the generated documentation in your browser.
+
+## Dependencies
+Here are the main dependencies used in the project:
+- **Express**: Web framework for Node.js.
+- **Helmet**: Secures HTTP headers.
+- **Cors**: Enables cross-origin resource sharing.
+- **Multer**: Handles file uploads.
+- **jsonwebtoken**: Provides JWT-based authentication.
+- **express-validator**: Validates incoming request data.
+- **dotenv**: Loads environment variables.
+- **apidoc**: Generates API documentation from annotations in your source code.
+
+## Scripts
+- **`npm run dev`**: Start the development server with `nodemon`.
+- **`npm run generate-docs`**: Generate the API documentation using `apidoc`.
+
+## Project Structure
+- **src/routes**: Contains all route files for users, authentication, and media.
+- **src/controllers**: Contains controller logic for each entity.
+- **src/middlewares**: Contains middlewares for authentication, validation, and error handling.
+- **docs**: Contains the generated API documentation.
+- **public**: Static files such as HTML, CSS, JavaScript for the client.
+
+## Usage
 1. **Register a User**:
-   - **Endpoint**: `POST /api/auth/register`
-   - **Body**:
-   ```json
-   {
-     "username": "testuser",
-     "email": "user@user.com",
-     "password": "pd123"
-   }
-   ```
-
-2. **Login to Get Token**:
-   - Use the login endpoint to authenticate and receive a JWT token.
-
-3. **Request Password Reset**:
-   - Send a `POST` request to `/api/auth/password-reset` with the registered email.
-
-4. **Use Password Reset Link**:
-   - Use the token received in the email to reset the password.
-
-## Common Issues and Debugging Tips
-- **500 Internal Server Error**: Check the server logs for specific error messages.
-- **Invalid Token**: Ensure the token has not expired and is correct.
-- **Emails Not Sent**: Verify that the **SendGrid API key** and **sender email** are configured properly.
-- **Database Errors**: Make sure the MySQL server is running and credentials in `.env` are correct.
-
-## Security Considerations
-- **Token Expiry**: Password reset tokens are valid for a limited period.
-- **Password Hashing**: All passwords are hashed using **bcrypt** before storing in the database.
-- **Environment Variables**: Sensitive information is stored in the `.env` file.
-
+   - Use `/api/auth/register` to register a new user.
+2. **Login**:
+   - Authenticate using `/api/auth/login` and get a JWT token.
+3. **Access Media Resources**:
+   - Use the JWT token to create, retrieve, update, and delete media items.
 
 

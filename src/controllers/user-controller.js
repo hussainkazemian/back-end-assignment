@@ -1,85 +1,114 @@
-import { updateUserById, selectUserById, addUser } from '../models/user-model.js';
-import { validationResult, body } from 'express-validator';
+import promisePool from '../utils/database.js';
 import bcrypt from 'bcryptjs';
 
+/**
+ * Create a new user
+ */
+export const postUser = async (req, res) => {
+  const { username, email, password } = req.body;
 
-// Validation rules for adding a new user
-const postUserValidationRules = [
-  body('username').isString().isLength({ min: 3 }).trim().escape().withMessage('Username must be at least 3 characters long'),
-  body('email').isEmail().normalizeEmail().withMessage('Invalid email address'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-];
-
-// Validation rules for updating user info
-const putUserValidationRules = [
-  body('username').optional().isString().trim().escape().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
-  body('email').optional().isEmail().normalizeEmail().withMessage('Invalid email address'),
-];
-
-const putUser = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = new Error('Invalid or missing fields');
-    error.status = 400;
-    return next(error);
-  }
-
-  const { username, email } = req.body;
   try {
-    const updatedUser = await updateUserById(req.user.user_id, { username, email });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const sql = `INSERT INTO Users (username, email, password, user_level_id) VALUES (?, ?, ?, 2)`;
+    const [result] = await promisePool.query(sql, [username, email, hashedPassword]);
 
-    if (updatedUser === 0) {
-      const error = new Error('Cannot update user information.');
-      error.status = 403;
-      return next(error);
+    res.status(201).json({
+      message: 'User created successfully.',
+      user: {
+        id: result.insertId,
+        username,
+        email,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating user:', error.message);
+    res.status(500).json({ message: 'Failed to create user' });
+  }
+};
+
+/**
+ * Update user information
+ */
+export const putUser = async (req, res) => {
+  const { username, email, password } = req.body;
+  const { user_id } = req.user;
+
+  try {
+    const updates = [];
+    const params = [];
+
+    if (username) {
+      updates.push('username = ?');
+      params.push(username);
     }
 
-    return res.status(200).json({ message: 'User information updated' });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getUserById = async (req, res, next) => {
-  const id = parseInt(req.params.id, 10);
-
-  try {
-    const user = await selectUserById(id);
-
-    if (user) {
-      return res.status(200).json(user);
-    } else {
-      const error = new Error('User not found');
-      error.status = 404;
-      return next(error);
+    if (email) {
+      updates.push('email = ?');
+      params.push(email);
     }
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updates.push('password = ?');
+      params.push(hashedPassword);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+
+    params.push(user_id);
+    const sql = `UPDATE Users SET ${updates.join(', ')} WHERE user_id = ?`;
+    const [result] = await promisePool.query(sql, params);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'User updated successfully' });
   } catch (error) {
-    next(error);
+    console.error('Error updating user:', error.message);
+    res.status(500).json({ message: 'Failed to update user' });
   }
 };
 
-const postUser = async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error('Invalid or missing fields');
-    error.status = 400;
-    return next(error);
-  }
+/**
+ * Get user by ID
+ */
+export const getUserById = async (req, res) => {
+  const { id } = req.params;
 
   try {
-    const salt = await bcrypt.genSalt(10); // Use a properly named variable
-    const hashedPassword = await bcrypt.hash(req.body.password, salt); // Use the correct variable `salt`
-    const userData = {
-      username: req.body.username,
-      email: req.body.email,
-      password: hashedPassword, // Store hashed password
-    };
+    const sql = `SELECT user_id, username, email, user_level_id FROM Users WHERE user_id = ?`;
+    const [rows] = await promisePool.query(sql, [id]);
 
-    const newUserId = await addUser(userData); // Declare `newUserId` once here
-    res.status(201).json({ message: 'New user added', user_id: newUserId });
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(rows[0]);
   } catch (error) {
-    next(error);
+    console.error('Error fetching user:', error.message);
+    res.status(500).json({ message: 'Failed to retrieve user' });
   }
 };
-export { getUserById, putUser, postUser, postUserValidationRules, putUserValidationRules };
+
+/**
+ * Retrieve the current authenticated user
+ */
+export const getMe = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const sql = `SELECT user_id, username, email, user_level_id FROM Users WHERE user_id = ?`;
+    const [rows] = await promisePool.query(sql, [user_id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Error retrieving current user:', error.message);
+    res.status(500).json({ message: 'Failed to retrieve user information' });
+  }
+};

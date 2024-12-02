@@ -1,15 +1,22 @@
 import sgMail from '@sendgrid/mail';
 import 'dotenv/config';
 
+
 // Set SendGrid API key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+/**
+ * Function to send an email
+ * @param {string} to - Recipient email address
+ * @param {string} subject - Subject of the email
+ * @param {string} text - Plain text content of the email
+ */
 export const sendEmail = async (to, subject, text) => {
   const msg = {
-    to, // Recipient email address
-    from: 'hussain.kazemian@metropolia.fi', // Your verified sender email on SendGrid
-    subject, // Subject of the email
-    text, // Email content (plain text)
+    to,
+    from: 'hussain.kazemian@metropolia.fi', // Your verified sender email
+    subject,
+    text,
   };
 
   try {
@@ -20,3 +27,6 @@ export const sendEmail = async (to, subject, text) => {
     throw new Error('Failed to send email');
   }
 };
+
+
+

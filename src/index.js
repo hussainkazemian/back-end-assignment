@@ -1,50 +1,54 @@
+import helmet from 'helmet';
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import mediaRouter from './routes/media-router.js';
-import authRouter from './routes/auth-router.js';
+import path from 'path';
 import userRouter from './routes/user-router.js';
-import { notFoundHandler, errorHandler } from './middlewares/error-handler.js'; 
+import authRouter from './routes/auth-router.js';
+import mediaRouter from './routes/media-router.js';
+import { notFoundHandler, errorHandler } from './middlewares/error-handler.js';
 
-const hostname = '127.0.0.1';
-const port = 3000;
 const app = express();
-app.use(helmet());
+const port = 3000;
 
+// Adjust Helmet configuration to allow unsafe-eval in local development
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-eval'"], // Allow 'unsafe-eval'
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
+
+// Apply other middlewares
+app.use(cors()); // Enables Cross-Origin Resource Sharing
+app.use(express.json()); // Parses incoming JSON requests
+
+// Set up views for pug rendering (if used)
 app.set('view engine', 'pug');
-app.set('views', 'src/views');
+app.set('views', path.join(path.resolve(), 'src', 'views'));
 
-app.use(express.json());
+// Mount API routes
+app.use('/api/users', userRouter); // User routes
+app.use('/api/auth', authRouter); // Authentication routes
+app.use('/api/media', mediaRouter); // Media routes
 
-app.use(cors());
-// Home page (client) as static html, css, js
-app.use(express.static('public'));
-// Uploaded media files
-app.use('/uploads', express.static('uploads'));
+// Serve API documentation
+// Using path.resolve() to handle the correct path in ES6 modules
+app.use('/docs', express.static(path.resolve('docs')));
 
-// Api documentation page rendered with pug
-app.get('/api', (req, res) => {
-  res.render('index', {
-    title: 'Media sharing REST API Documentation',
-    version: process.env.npm_package_version,
-    // exampleData: mediaItems,
-  });
-});
+// Handle undefined routes (404 errors)
+app.use(notFoundHandler); // Middleware for 404 errors
 
-// User authentication endpoints
-app.use('/api/auth', authRouter);
-// Media resource endpoints
-app.use('/api/media', mediaRouter);
+// Centralized error handler
+app.use(errorHandler); // Middleware for handling application errors
 
-app.use('/api/users', userRouter);
-// User resource endpoints
-//app.use('/api/users', userRouter);
-app.use('/api/users', userRouter); 
-// not found handler for all other routes
-app.use(notFoundHandler);
-// custom error handler as the last middleware
-app.use(errorHandler);
-
-app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Docs available at http://localhost:${port}/docs`);
 });
